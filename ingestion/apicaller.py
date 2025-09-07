@@ -29,7 +29,7 @@ class APICaller:
         print(f"Endpoint capitalized: {endpoint_capitalized}")
         table_name = f"{endpoint_capitalized}Table"
         print(f"Table name: {table_name}")
-        #data_key = f"{endpoint_capitalized}s"  # Add 's' back for data key
+
         df = pd.json_normalize(data["MRData"][table_name][endpoint_capitalized_with_s])
         # let's explode the time column if it exists
         if "time" in df.columns:
@@ -39,16 +39,12 @@ class APICaller:
             country_index = df.columns.get_loc("Circuit.Location.country")
             cols_to_drop = df.columns[country_index + 1:]
             df = df.drop(columns=cols_to_drop)
-
-        # we should only normalize this column in json MRData.DriverTable.Drivers
         return df
 
 if __name__ == "__main__":
-    # Get the project root directory (parent of ingestion folder)
     project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     output_dir = os.path.join(project_root, "data", "openf1source")
     
-    # Create directory if it doesn't exist
     os.makedirs(output_dir, exist_ok=True)
     
     with_year = ["races", "drivers"]
@@ -60,7 +56,6 @@ if __name__ == "__main__":
             print(f"\nFetching data for: {endpoint} in year {year}")
             df = api_caller.fetch_data(year, endpoint)
             
-            # we should append each year data in the same file without overwriting
             output_file = os.path.join(output_dir, f"{endpoint}_data.csv")
             df.to_csv(output_file, index=False, mode='a', header=not os.path.exists(output_file))
             print(f"Saved {endpoint} data for year {year} to: {output_file}")
